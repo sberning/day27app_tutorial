@@ -1,9 +1,6 @@
 var restify = require('restify');
 var mongojs = require("mongojs");
 
-var ip_addr = process.env.OPENSHIFT_NODEJS_IP;
-var port    = parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
-
 var server = restify.createServer({
     name : "day27app"
 });
@@ -12,7 +9,19 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.use(restify.CORS());
 
-var connection_string = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ':' + process.env.OPENSHIFT_MONGODB_DB_PASSWORD + '@' + process.env.OPENSHIFT_MONGODB_DB_HOST + ':' + process.env.OPENSHIFT_MONGODB_DB_PORT + '/day27app';
+var ip_addr;
+var port;
+var connection_string;
+
+if(process.env.OPENSHIFT_NODEJS_IP){ 
+    connection_string = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ':' + process.env.OPENSHIFT_MONGODB_DB_PASSWORD + '@' + process.env.OPENSHIFT_MONGODB_DB_HOST + ':' + process.env.OPENSHIFT_MONGODB_DB_PORT + '/day27app';
+    ip_addr = process.env.OPENSHIFT_NODEJS_IP;
+    port = parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
+}else{
+    connection_string = "127.0.0.1:27017/day27app"
+    ip_addr = "127.0.0.1"
+    port = 8080;
+}
 var db = mongojs(connection_string, ['day27app']);
 var jobs = db.collection("jobs");
 
@@ -35,7 +44,6 @@ function findAllJobs(req, res , next){
         }
  
     });
- 
 }
  
 function findJob(req, res , next){
